@@ -23,12 +23,12 @@ local CONFIG = {
     -- NOVO: Seção central para configurar presets de prioridade.
     -- Adicione ou edite qualquer preset aqui. O nome será o que aparece no menu.
     Presets = {
-        ["Padrão - Keilo e Kameki"] = {1, 2, 3, 4},
-        ["Gloom"] = {2, 4, 1, 3},
-        ["Foxuro"] = {1, 2, 4, 3},
-		["Saito e Gazo"] = {1, 4, 2, 3},
-		["Koju"] = {1, 3, 4, 2},
-		["Lufus"] = {1, 4, 3, 2	},
+        ["0 - Kameki"] = {1, 2, 3, 4},
+		["1 - Saito e Gazo"] = {1, 4, 2, 3},
+        ["2 - Foxuro e Keilo"] = {1, 2, 4, 3},
+        ["3 - Gloom"] = {2, 4, 1, 3},
+		["4 - Koju"] = {1, 3, 4, 2},
+		["5 - Lufus"] = {1, 4, 3, 2	},
 		["TesteFoxuro"] = {4, 1, 2, 3}
     },
 
