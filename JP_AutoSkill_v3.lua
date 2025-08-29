@@ -1,14 +1,13 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 3: Adicionado presets de prioridade (padrão e invertido).
+Versão 4: Central de presets e remoção de botão.
 ]]
 
 --[[ SERVIÇOS ]]
--- --- MUDANÇA: Agrupando todos os serviços no início para melhor organização.
 local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService") -- Usado para aguardar um frame, alternativa a task.wait
+local RunService = game:GetService("RunService")
 
 --[[ BIBLIOTECA E VARIÁVEIS LOCAIS ]]
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/refs/heads/main/Orion%20Lib/Orion%20Lib%20Source.lua')))()
@@ -19,7 +18,17 @@ local playerGui = player:WaitForChild("PlayerGui")
 local CONFIG = {
     Enabled = true,
     Debug = true,
-    Priorities = {1, 2, 3, 4},
+    Priorities = {1, 2, 3, 4}, -- Prioridade inicial
+    
+    -- NOVO: Seção central para configurar presets de prioridade.
+    -- Adicione ou edite qualquer preset aqui. O nome será o que aparece no menu.
+    Presets = {
+        ["Padrão"] = {1, 2, 3, 4},
+        ["Invertido"] = {4, 3, 2, 1},
+        ["Meio-Primeiro"] = {2, 3, 1, 4},
+        ["Extremos-Primeiro"] = {1, 4, 2, 3},
+    },
+
     FastTriggerAbilities = {
         ["DEKU SMASH"] = true, ["BATTLE SPIRIT"] = true, ["SUPER JUMP"] = true,
         ["CHAIN SPEAR"] = true, ["SKY GLIDE"] = true, ["DARK REVERSAL"] = true,
@@ -31,7 +40,6 @@ local CONFIG = {
         Enum.KeyCode.One, Enum.KeyCode.Two,
         Enum.KeyCode.Three, Enum.KeyCode.Four
     },
-    -- --- MUDANÇA: Usando um "set" (tabela com chaves) para busca O(1), muito mais rápido que table.find.
     ParryAbilities = {
         ["UPPER CUT"]=true, ["DEKU SMASH"]=true, ["BRUTAL STEP"]=true, ["FALSE RUSH"]=true, ["LEAP SHREDS"]=true,
         ["SHADOW SLASH"]=true, ["ICE SLIDE"]=true, ["ZAP KICKZ"]=true, ["SPIRIT WRATH"]=true, ["BATTLE SPIRIT"]=true,
@@ -84,16 +92,10 @@ local function debugPrint(...)
     if CONFIG.Debug then print("[DEBUG]", ...) end
 end
 
--- NOVO: Função para aplicar presets de prioridade
+-- Função para aplicar presets de prioridade a partir da tabela CONFIG.Presets
 local function applyPriorityPreset(presetName)
-    local newPriorities
-    if presetName == "Padrão" then
-        newPriorities = {1, 2, 3, 4}
-    elseif presetName == "Invertido" then
-        newPriorities = {4, 3, 2, 1}
-    else
-        return -- Não faz nada se o preset for desconhecido
-    end
+    local newPriorities = CONFIG.Presets[presetName]
+    if not newPriorities then return end -- Retorna se o preset não existir
 
     CONFIG.Priorities = newPriorities
     -- Atualiza os sliders para refletir a mudança
@@ -105,11 +107,17 @@ local function applyPriorityPreset(presetName)
     debugPrint("Preset de prioridade aplicado:", presetName)
 end
 
--- NOVO: Dropdown para selecionar os presets
+-- Dropdown para selecionar os presets, gerado dinamicamente
+local presetOptions = {}
+for name in pairs(CONFIG.Presets) do
+    table.insert(presetOptions, name)
+end
+table.sort(presetOptions) -- Opcional: ordena os nomes dos presets em ordem alfabética
+
 Tab:AddDropdown({
     Name = "Presets de Prioridade",
     Default = "Padrão",
-    Options = {"Padrão", "Invertido"},
+    Options = presetOptions,
     Callback = function(preset)
         applyPriorityPreset(preset)
     end
@@ -137,7 +145,8 @@ for i = 1, 4 do
     })
 end
 
-Tab:AddButton({ Name = "Destroy UI", Callback = function() OrionLib:Destroy() end })
+-- REMOVIDO: Botão "Destroy UI"
+-- Tab:AddButton({ Name = "Destroy UI", Callback = function() OrionLib:Destroy() end })
 
 --[[ FUNÇÕES PRINCIPAIS ]]
 local function pressAbilityKey(index, button, abilityName)
@@ -149,7 +158,7 @@ local function pressAbilityKey(index, button, abilityName)
     local pressCount = CONFIG.DoublePressAbilities[abilityName] and 2 or 1
     for _ = 1, pressCount do
         VirtualInputManager:SendKeyEvent(true, key, false, game)
-        task.wait(0.01) -- Pequeno delay para garantir o registro
+        task.wait(0.01)
         VirtualInputManager:SendKeyEvent(false, key, false, game)
         task.wait(0.05)
     end
@@ -158,7 +167,7 @@ local function pressAbilityKey(index, button, abilityName)
         local originalColor = button.BackgroundColor3
         button.BackgroundColor3 = Color3.new(1, 1, 0)
         task.delay(0.25, function()
-            if button and button.Parent then -- Garante que o botão ainda existe
+            if button and button.Parent then
                 button.BackgroundColor3 = originalColor
             end
         end)
