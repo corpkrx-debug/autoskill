@@ -1,10 +1,5 @@
 -- TESTE: ISTO É APENAS UM COMENTÁRIO E DEVE SER IGNORADO
 
---[[
-   
-JP - Auto Skill - Death Ball
-
-]]
 
 local Players = game:GetService("Players")
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/refs/heads/main/Orion%20Lib/Orion%20Lib%20Source.lua')))()
