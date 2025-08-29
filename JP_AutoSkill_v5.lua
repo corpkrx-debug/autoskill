@@ -1,7 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 8: Corrigida a lógica de detecção de mudança de campeão.
+Versão 9: Implementado monitoramento ativo para garantir a detecção de mudança de campeão.
 ]]
 
 --[[ SERVIÇOS ]]
@@ -268,39 +268,45 @@ local function onDeflectCooldownChanged(toolbarButtons)
     end
 end
 
--- MUDANÇA: Função mais robusta para configurar os listeners das habilidades
-local function setupAbilityListeners(toolbarButtons)
-    debugPrint("Configurando listeners de habilidade...")
-    for i = 1, 4 do
-        local button = toolbarButtons:FindFirstChild("AbilityButton" .. i)
-        if not button then 
-            warn("Não foi possível encontrar o AbilityButton" .. i)
-            continue 
+-- MUDANÇA: Nova função de monitoramento ativo de habilidades
+local function monitorAbilityChanges(toolbarButtons)
+    local lastKnownAbilities = {}
+
+    local function getCurrentAbilities()
+        local currentAbilities = {}
+        for i = 1, 4 do
+            local button = toolbarButtons:FindFirstChild("AbilityButton" .. i)
+            local label = button and button:FindFirstChild("AbilityNameLabel")
+            table.insert(currentAbilities, label and label.Text or "N/A")
         end
-
-        local connection = nil
-
-        local function setupListenerForLabel(label)
-            if connection then connection:Disconnect() end
-            if label then
-                debugPrint("Conectando listener à label do slot " .. i)
-                connection = label:GetPropertyChangedSignal("Text"):Connect(function()
-                    debugPrint("Mudança de texto detectada no slot " .. i)
-                    task.wait(0.2) 
-                    detectAndApplyChampionPreset(toolbarButtons)
-                end)
-            end
-        end
-
-        setupListenerForLabel(button:FindFirstChild("AbilityNameLabel"))
-
-        button.ChildAdded:Connect(function(child)
-            if child.Name == "AbilityNameLabel" then
-                debugPrint("Nova AbilityNameLabel adicionada ao slot " .. i .. ". Reconfigurando listener.")
-                setupListenerForLabel(child)
-            end
-        end)
+        return currentAbilities
     end
+    
+    lastKnownAbilities = getCurrentAbilities()
+
+    task.spawn(function()
+        debugPrint("Iniciando monitoramento de habilidades...")
+        while true do
+            task.wait(1) -- Verifica a cada segundo
+            if CONFIG.Enabled then
+                local currentAbilities = getCurrentAbilities()
+                local hasChanged = false
+                for i = 1, 4 do
+                    if currentAbilities[i] ~= lastKnownAbilities[i] then
+                        hasChanged = true
+                        break
+                    end
+                end
+
+                if hasChanged then
+                    debugPrint("Mudança de habilidade detectada. Re-verificando o campeão.")
+                    lastKnownAbilities = currentAbilities
+                    task.wait(0.2) -- Pequeno delay para garantir que a UI se estabilizou
+                    detectAndApplyChampionPreset(toolbarButtons)
+                end
+            end
+        end
+    end)
 end
 
 local function main()
@@ -321,8 +327,8 @@ local function main()
     task.wait(1) 
     detectAndApplyChampionPreset(toolbarButtons)
     
-    -- MUDANÇA: Chamando a nova função de configuração de listeners
-    setupAbilityListeners(toolbarButtons)
+    -- MUDANÇA: Chamando a nova função de monitoramento
+    monitorAbilityChanges(toolbarButtons)
 
     deflectButton.Cooldown:GetPropertyChangedSignal("Visible"):Connect(function()
         onDeflectCooldownChanged(toolbarButtons)
