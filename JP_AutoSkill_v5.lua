@@ -1,7 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 6: Detecção automática de campeão e carregamento de presets.
+Versão 7: Corrigido o feedback visual na mudança de preset automático.
 ]]
 
 --[[ SERVIÇOS ]]
@@ -140,6 +140,7 @@ Tab:AddLabel("Prioridade de Uso das Habilidades")
 
 local prioritySliders = {}
 local presetDropdown = nil -- Variável para guardar o objeto dropdown
+local activePresetLabel = nil -- MUDANÇA: Label para mostrar o preset ativo
 
 local function debugPrint(...)
     if CONFIG.Debug then print("[DEBUG]", ...) end
@@ -156,9 +157,9 @@ local function applyPriorityPreset(presetName)
         end
     end
     
-    if presetDropdown then
-        -- Tenta atualizar o texto do dropdown (pode não ser suportado pela lib)
-        pcall(function() presetDropdown:Set(presetName) end)
+    -- MUDANÇA: Atualiza o label de status em vez de tentar mudar o dropdown, que não é suportado.
+    if activePresetLabel then
+        activePresetLabel:Set("Preset Ativo: " .. presetName)
     end
 
     debugPrint("Preset de prioridade aplicado:", presetName)
@@ -170,10 +171,13 @@ table.sort(presetOptions)
 
 presetDropdown = Tab:AddDropdown({
     Name = "Presets de Prioridade",
-    Default = "Padrão",
+    Default = "Selecionar Manualmente...",
     Options = presetOptions,
     Callback = function(preset) applyPriorityPreset(preset) end
 })
+
+-- MUDANÇA: Adiciona o label de status na UI
+activePresetLabel = Tab:AddLabel("Preset Ativo: Nenhum")
 
 local function updatePriorities(changedSlot, newPriority)
     if CONFIG.Priorities[changedSlot] == newPriority then return end
@@ -382,4 +386,5 @@ if not success then
 end
 
 OrionLib:Init()
+
 
