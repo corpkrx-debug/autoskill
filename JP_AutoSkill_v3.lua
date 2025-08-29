@@ -23,10 +23,12 @@ local CONFIG = {
     -- NOVO: Seção central para configurar presets de prioridade.
     -- Adicione ou edite qualquer preset aqui. O nome será o que aparece no menu.
     Presets = {
-        ["Padrão"] = {1, 2, 3, 4},
-        ["Invertido"] = {4, 3, 2, 1},
-        ["Meio-Primeiro"] = {2, 3, 1, 4},
-        ["Extremos-Primeiro"] = {1, 4, 2, 3},
+        ["Padrão - Keilo e Kameki"] = {1, 2, 3, 4},
+        ["Gloom"] = {2, 4, 1, 3},
+        ["Foxuro"] = {1, 2, 4, 3},
+		["Saito e Gazo"] = {1, 4, 2, 3},
+		["Koju"] = {1, 3, 4, 2},
+		["Lufus"] = {1, 4, 3, 2	}
     },
 
     FastTriggerAbilities = {
