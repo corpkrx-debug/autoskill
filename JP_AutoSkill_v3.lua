@@ -1,7 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 2: Adicionado toggle para ativar/desativar a funcionalidade.
+Versão 3: Adicionado presets de prioridade (padrão e invertido).
 ]]
 
 --[[ SERVIÇOS ]]
@@ -17,7 +17,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 --[[ CONFIGURAÇÃO ]]
 local CONFIG = {
-    Enabled = true, -- NOVO: Toggle geral para a funcionalidade.
+    Enabled = true,
     Debug = true,
     Priorities = {1, 2, 3, 4},
     FastTriggerAbilities = {
@@ -78,7 +78,43 @@ Tab:AddToggle({
 })
 
 Tab:AddLabel("Prioridade de Uso das Habilidades")
+
 local prioritySliders = {}
+local function debugPrint(...)
+    if CONFIG.Debug then print("[DEBUG]", ...) end
+end
+
+-- NOVO: Função para aplicar presets de prioridade
+local function applyPriorityPreset(presetName)
+    local newPriorities
+    if presetName == "Padrão" then
+        newPriorities = {1, 2, 3, 4}
+    elseif presetName == "Invertido" then
+        newPriorities = {4, 3, 2, 1}
+    else
+        return -- Não faz nada se o preset for desconhecido
+    end
+
+    CONFIG.Priorities = newPriorities
+    -- Atualiza os sliders para refletir a mudança
+    for i = 1, 4 do
+        if prioritySliders[i] then
+            prioritySliders[i]:Set(CONFIG.Priorities[i])
+        end
+    end
+    debugPrint("Preset de prioridade aplicado:", presetName)
+end
+
+-- NOVO: Dropdown para selecionar os presets
+Tab:AddDropdown({
+    Name = "Presets de Prioridade",
+    Default = "Padrão",
+    Options = {"Padrão", "Invertido"},
+    Callback = function(preset)
+        applyPriorityPreset(preset)
+    end
+})
+
 local function updatePriorities(changedSlot, newPriority)
     if CONFIG.Priorities[changedSlot] == newPriority then return end
 
@@ -104,10 +140,6 @@ end
 Tab:AddButton({ Name = "Destroy UI", Callback = function() OrionLib:Destroy() end })
 
 --[[ FUNÇÕES PRINCIPAIS ]]
-local function debugPrint(...)
-    if CONFIG.Debug then print("[DEBUG]", ...) end
-end
-
 local function pressAbilityKey(index, button, abilityName)
     local key = CONFIG.Keybinds[index]
     if not key then return end
@@ -153,7 +185,6 @@ local function findReadyParryAbility(toolbarButtons)
             local cooldownFrame = button:FindFirstChild("Cooldown")
             local lock = button:FindFirstChild("LockLabel")
 
-            -- --- MUDANÇA: Verificação O(1) usando o "set", muito mais rápida.
             if label and CONFIG.ParryAbilities[label.Text] and
                cooldownFrame and not cooldownFrame.Visible and
                lock and not lock.Visible then
@@ -173,7 +204,6 @@ local function shouldParry(ball, cooldownStartTime, abilityName)
         return false
     end
 
-    -- --- MUDANÇA: Usando time() em vez de tick()
     local elapsed = (time() - cooldownStartTime) * 1000
     local isFast = CONFIG.FastTriggerAbilities[abilityName]
     local threshold = isFast and 300 or 800
@@ -183,22 +213,17 @@ end
 
 --[[ LÓGICA PRINCIPAL (BASEADA EM EVENTOS) ]]
 local function onDeflectCooldownChanged(toolbarButtons)
-    -- NOVO: Verifica se a funcionalidade está ativada antes de prosseguir.
     if not CONFIG.Enabled then return end
 
     local deflectButton = toolbarButtons:FindFirstChild("DeflectButton")
     if not deflectButton or not deflectButton:FindFirstChild("Cooldown") then return end
 
     if deflectButton.Cooldown.Visible then
-        -- Cooldown começou, iniciar a verificação
         local cooldownStartTime = time()
         
-        -- --- MUDANÇA: Usamos um loop temporário em uma nova thread
-        -- que só existe enquanto o cooldown do deflect está ativo.
         task.spawn(function()
             debugPrint("Deflect em cooldown. Procurando por oportunidades de parry.")
             while deflectButton.Cooldown.Visible and task.wait(0.05) do
-                -- NOVO: Adiciona uma verificação extra aqui para o caso de o usuário desativar durante o loop.
                 if not CONFIG.Enabled then break end
 
                 local index, button, abilityName = findReadyParryAbility(toolbarButtons)
@@ -206,7 +231,7 @@ local function onDeflectCooldownChanged(toolbarButtons)
                     local ball = workspace:FindFirstChild("Part")
                     if ball and shouldParry(ball, cooldownStartTime, abilityName) then
                         pressAbilityKey(index, button, abilityName)
-                        break -- Habilidade usada, para a verificação.
+                        break
                     end
                 end
             end
@@ -216,7 +241,6 @@ local function onDeflectCooldownChanged(toolbarButtons)
 end
 
 local function main()
-    -- --- MUDANÇA: Espera pelos objetos da UI de forma mais segura.
     local hud = playerGui:WaitForChild("HUD", 10)
     if not hud then
         warn("HUD não encontrado. O script não será executado.")
@@ -241,7 +265,6 @@ local function main()
         return
     end
 
-    -- --- MUDANÇA: Conectando a lógica a um evento em vez de um loop infinito.
     deflectButton.Cooldown:GetPropertyChangedSignal("Visible"):Connect(function()
         onDeflectCooldownChanged(toolbarButtons)
     end)
@@ -249,7 +272,6 @@ local function main()
     print("Auto Skill iniciado com sucesso. Aguardando cooldown do Deflect.")
 end
 
--- --- MUDANÇA: Envolvendo a inicialização em um pcall para segurança.
 local success, err = pcall(main)
 if not success then
     warn("Erro ao inicializar o script de Auto Skill:", err)

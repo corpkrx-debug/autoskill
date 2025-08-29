@@ -1,6 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
+Versão 2: Adicionado toggle para ativar/desativar a funcionalidade.
 ]]
 
 --[[ SERVIÇOS ]]
@@ -16,6 +17,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 --[[ CONFIGURAÇÃO ]]
 local CONFIG = {
+    Enabled = true, -- NOVO: Toggle geral para a funcionalidade.
     Debug = true,
     Priorities = {1, 2, 3, 4},
     FastTriggerAbilities = {
@@ -64,6 +66,12 @@ local Tab = Window:MakeTab({
 })
 
 --[[ ELEMENTOS DA UI ]]
+Tab:AddToggle({
+    Name = "Enable Auto Skill",
+    Default = CONFIG.Enabled,
+    Callback = function(value) CONFIG.Enabled = value end
+})
+
 Tab:AddToggle({
     Name = "Debug Mode", Default = CONFIG.Debug,
     Callback = function(value) CONFIG.Debug = value end
@@ -175,6 +183,9 @@ end
 
 --[[ LÓGICA PRINCIPAL (BASEADA EM EVENTOS) ]]
 local function onDeflectCooldownChanged(toolbarButtons)
+    -- NOVO: Verifica se a funcionalidade está ativada antes de prosseguir.
+    if not CONFIG.Enabled then return end
+
     local deflectButton = toolbarButtons:FindFirstChild("DeflectButton")
     if not deflectButton or not deflectButton:FindFirstChild("Cooldown") then return end
 
@@ -187,6 +198,9 @@ local function onDeflectCooldownChanged(toolbarButtons)
         task.spawn(function()
             debugPrint("Deflect em cooldown. Procurando por oportunidades de parry.")
             while deflectButton.Cooldown.Visible and task.wait(0.05) do
+                -- NOVO: Adiciona uma verificação extra aqui para o caso de o usuário desativar durante o loop.
+                if not CONFIG.Enabled then break end
+
                 local index, button, abilityName = findReadyParryAbility(toolbarButtons)
                 if index then
                     local ball = workspace:FindFirstChild("Part")
@@ -196,7 +210,7 @@ local function onDeflectCooldownChanged(toolbarButtons)
                     end
                 end
             end
-            debugPrint("Verificação de parry encerrada (cooldown acabou ou habilidade usada).")
+            debugPrint("Verificação de parry encerrada (cooldown acabou, habilidade usada ou script desativado).")
         end)
     end
 end
