@@ -1,7 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 4: Central de presets e remoção de botão.
+Versão 5: Janela com tamanho e posição personalizados.
 ]]
 
 --[[ SERVIÇOS ]]
@@ -20,16 +20,12 @@ local CONFIG = {
     Debug = true,
     Priorities = {1, 2, 3, 4}, -- Prioridade inicial
     
-    -- NOVO: Seção central para configurar presets de prioridade.
-    -- Adicione ou edite qualquer preset aqui. O nome será o que aparece no menu.
+    -- Seção central para configurar presets de prioridade.
     Presets = {
-        ["Padrão - Keilo e Kameki"] = {1, 2, 3, 4},
-        ["Gloom"] = {2, 4, 1, 3},
-        ["Foxuro"] = {1, 2, 4, 3},
-		["Saito e Gazo"] = {1, 4, 2, 3},
-		["Koju"] = {1, 3, 4, 2},
-		["Lufus"] = {1, 4, 3, 2	},
-		["TesteFoxuro"] = {4, 1, 2, 3}
+        ["Padrão"] = {1, 2, 3, 4},
+        ["Invertido"] = {4, 3, 2, 1},
+        ["Meio-Primeiro"] = {2, 3, 1, 4},
+        ["Extremos-Primeiro"] = {1, 4, 2, 3},
     },
 
     FastTriggerAbilities = {
@@ -69,7 +65,10 @@ local CONFIG = {
 --[[ INTERFACE GRÁFICA (UI) ]]
 local Window = OrionLib:MakeWindow({
     Name = "Ability Control Panel", HidePremium = false,
-    SaveConfig = true, ConfigFolder = "OrionAbilityControl"
+    SaveConfig = true, ConfigFolder = "OrionAbilityControl",
+    -- NOVO: Parâmetros para tamanho e posição da janela. Altere os valores como quiser.
+    Size = UDim2.new(0, 500, 0, 420), -- Largura de 500 pixels, Altura de 420 pixels
+    Position = UDim2.new(0, 30, 0, 30)  -- 30 pixels da esquerda, 30 pixels do topo
 })
 local Tab = Window:MakeTab({
     Name = "Ability Settings", Icon = "rbxassetid://4483345998",
@@ -98,10 +97,9 @@ end
 -- Função para aplicar presets de prioridade a partir da tabela CONFIG.Presets
 local function applyPriorityPreset(presetName)
     local newPriorities = CONFIG.Presets[presetName]
-    if not newPriorities then return end -- Retorna se o preset não existir
+    if not newPriorities then return end
 
     CONFIG.Priorities = newPriorities
-    -- Atualiza os sliders para refletir a mudança
     for i = 1, 4 do
         if prioritySliders[i] then
             prioritySliders[i]:Set(CONFIG.Priorities[i])
@@ -115,7 +113,7 @@ local presetOptions = {}
 for name in pairs(CONFIG.Presets) do
     table.insert(presetOptions, name)
 end
-table.sort(presetOptions) -- Opcional: ordena os nomes dos presets em ordem alfabética
+table.sort(presetOptions)
 
 Tab:AddDropdown({
     Name = "Presets de Prioridade",
@@ -147,9 +145,6 @@ for i = 1, 4 do
         Callback = function(value) updatePriorities(i, value) end
     })
 end
-
--- REMOVIDO: Botão "Destroy UI"
--- Tab:AddButton({ Name = "Destroy UI", Callback = function() OrionLib:Destroy() end })
 
 --[[ FUNÇÕES PRINCIPAIS ]]
 local function pressAbilityKey(index, button, abilityName)
@@ -290,3 +285,4 @@ if not success then
 end
 
 OrionLib:Init()
+
