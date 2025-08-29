@@ -28,6 +28,9 @@ local CONFIG = {
         ["3 - Gloom"] = {2, 4, 1, 3},
 		["4 - Koju"] = {1, 3, 4, 2},
 		["5 - Lufus"] = {1, 4, 3, 2	},
+        ["6 - JJ"] = {4, 3, 2, 1},
+        ["7 - Friera"] = {4, 2, 1, 3},
+        ["8 - Wu"] = {3, 4, 1, 2},
 		["TesteFoxuro"] = {4, 1, 2, 3},
     },
 
@@ -343,4 +346,5 @@ if not success then
 end
 
 OrionLib:Init()
+
 
