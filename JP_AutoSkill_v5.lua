@@ -1,7 +1,7 @@
 --[[
 JP - Auto Skill - Death Ball
 Analisado e refatorado para maior eficiência e robustez.
-Versão 7: Corrigido o feedback visual na mudança de preset automático.
+Versão 8: Corrigida a lógica de detecção de mudança de campeão.
 ]]
 
 --[[ SERVIÇOS ]]
@@ -31,7 +31,7 @@ local CONFIG = {
 		["TesteFoxuro"] = {4, 1, 2, 3},
     },
 
-    -- MUDANÇA: Mapa de habilidades para campeões (DE/PARA)
+    -- Mapa de habilidades para campeões (DE/PARA)
     ChampionPresetsMap = {
         ["EXTEND-O ARM"] = "Lufus", ["GUM GUM BALLOON"] = "Lufus", ["GLASS WALL"] = "Lufus", ["TIME HAKI"] = "Lufus",
         ["FAKE BALL"] = "Gazo", ["PHASE DASH"] = "Gazo", ["BLINDFOLD"] = "Gazo", ["ASTRAL PORTAL"] = "Gazo",
@@ -64,50 +64,20 @@ local CONFIG = {
     ParryAbilities = {
         -- Lufus
         ["EXTEND-O ARM"]=true, ["GUM GUM BALLOON"]=true, ["GLASS WALL"]=true, ["TIME HAKI"]=true,
-        
-        -- Gazo
         ["FAKE BALL"]=true, ["PHASE DASH"]=true, ["BLINDFOLD"]=true, ["ASTRAL PORTAL"]=true,
-        
-        -- Saito
         ["UPPER CUT"]=true, ["SUPER JUMP"]=true, ["SONIC SLIDE"]=true, ["GROUND WALLS"]=true,
-        
-        -- Kameki
         ["KI BLAST"]=true, ["DRAGON RUSH"]=true, ["INSTANT TRAVEL"]=true, ["DEATH BALL"]=true,
-        
-        -- Keilo
         ["ZAP FREEZE"]=true, ["GODSPEED"]=true, ["ASSASSIN INVISIBILITY"]=true, ["LIGHTNING INTERCEPT"]=true,
-
-        -- Gemtoki
         ["GEM HUNT"]=true, ["DOUBLE OR NOTHING"]=true, ["CASH OUT"]=true, ["DONATE"]=true,
-
-        -- Foxuro
         ["NINJA RUN"]=true, ["SHADOW CLONE"]=true, ["TREE JUMP"]=true, ["FOX ARMOUR"]=true,
-        
-        -- Koju
         ["LEAP STRIKE"]=true, ["SPIRIT WALL"]=true, ["CHAIN SPEAR"]=true, ["HANDGUN"]=true,
-        
-        -- Senshu
         ["EGOIST WARP"]=true, ["CHARGED KICK"]=true, ["YELLOW CARD"]=true, ["JUGGLING BLAST"]=true,
-        
-        -- Torokai
         ["SWITCH ELEMENTS"]=true, ["ICE SLIDE"]=true, ["FIRE DASH"]=true, ["ICE ZONE"]=true, ["FIRE ZONE"]=true, ["ICE SHIELD"]=true, ["FIRE BALL"]=true,
-        
-        -- Jiro
         ["BOMB JUMP"]=true, ["BONK"]=true, ["SIDESTEP"]=true, ["BUNGEE"]=true,
-        
-        -- Denjin
         ["JET DASH"]=true, ["GRAVITY HOLD"]=true, ["ORBITAL CANNON"]=true, ["OVERHEAT"]=true,
-        
-        -- Gloom
         ["SHADOW RAMPAGE"]=true, ["DARK REVERSAL"]=true, ["DREAD SPHERE"]=true, ["PHANTOM GRASP"]=true,
-        
-        -- Friera
         ["SKY GLIDE"]=true, ["MANA SHOT"]=true, ["RUNEGUARD"]=true, ["SINGULARITY"]=true,
-        
-        -- Wu
         ["DAGGER DASH"]=true, ["BLINK"]=true, ["RULERS HOLD"]=true, ["ARISE"]=true,
-        
-        -- JJ
         ["PHANTOM SLAP"]=true, ["REVENGE"]=true, ["FIST BARRAGE"]=true, ["STANDOFF"]=true
     }
 }
@@ -125,22 +95,13 @@ local Tab = Window:MakeTab({
 })
 
 --[[ ELEMENTOS DA UI ]]
-Tab:AddToggle({
-    Name = "Enable Auto Skill",
-    Default = CONFIG.Enabled,
-    Callback = function(value) CONFIG.Enabled = value end
-})
-
-Tab:AddToggle({
-    Name = "Debug Mode", Default = CONFIG.Debug,
-    Callback = function(value) CONFIG.Debug = value end
-})
-
+Tab:AddToggle({ Name = "Enable Auto Skill", Default = CONFIG.Enabled, Callback = function(value) CONFIG.Enabled = value end })
+Tab:AddToggle({ Name = "Debug Mode", Default = CONFIG.Debug, Callback = function(value) CONFIG.Debug = value end })
 Tab:AddLabel("Prioridade de Uso das Habilidades")
 
 local prioritySliders = {}
-local presetDropdown = nil -- Variável para guardar o objeto dropdown
-local activePresetLabel = nil -- MUDANÇA: Label para mostrar o preset ativo
+local presetDropdown = nil
+local activePresetLabel = nil
 
 local function debugPrint(...)
     if CONFIG.Debug then print("[DEBUG]", ...) end
@@ -152,16 +113,10 @@ local function applyPriorityPreset(presetName)
 
     CONFIG.Priorities = newPriorities
     for i = 1, 4 do
-        if prioritySliders[i] then
-            prioritySliders[i]:Set(CONFIG.Priorities[i])
-        end
+        if prioritySliders[i] then prioritySliders[i]:Set(CONFIG.Priorities[i]) end
     end
     
-    -- MUDANÇA: Atualiza o label de status em vez de tentar mudar o dropdown, que não é suportado.
-    if activePresetLabel then
-        activePresetLabel:Set("Preset Ativo: " .. presetName)
-    end
-
+    if activePresetLabel then activePresetLabel:Set("Preset Ativo: " .. presetName) end
     debugPrint("Preset de prioridade aplicado:", presetName)
 end
 
@@ -170,18 +125,13 @@ for name in pairs(CONFIG.Presets) do table.insert(presetOptions, name) end
 table.sort(presetOptions)
 
 presetDropdown = Tab:AddDropdown({
-    Name = "Presets de Prioridade",
-    Default = "Selecionar Manualmente...",
-    Options = presetOptions,
-    Callback = function(preset) applyPriorityPreset(preset) end
+    Name = "Presets de Prioridade", Default = "Selecionar Manualmente...",
+    Options = presetOptions, Callback = function(preset) applyPriorityPreset(preset) end
 })
-
--- MUDANÇA: Adiciona o label de status na UI
 activePresetLabel = Tab:AddLabel("Preset Ativo: Nenhum")
 
 local function updatePriorities(changedSlot, newPriority)
     if CONFIG.Priorities[changedSlot] == newPriority then return end
-
     local oldPriority = CONFIG.Priorities[changedSlot]
     for slot, priority in ipairs(CONFIG.Priorities) do
         if slot ~= changedSlot and priority == newPriority then
@@ -202,8 +152,6 @@ for i = 1, 4 do
 end
 
 --[[ FUNÇÕES PRINCIPAIS ]]
-
--- MUDANÇA: Nova função para detectar o campeão e aplicar o preset
 local function detectAndApplyChampionPreset(toolbarButtons)
     local championCounts = {}
     local mostFrequentChampion = nil
@@ -229,11 +177,11 @@ local function detectAndApplyChampionPreset(toolbarButtons)
 
     if not mostFrequentChampion then
         debugPrint("Nenhum campeão correspondente detectado.")
+        activePresetLabel:Set("Preset Ativo: Nenhum (Automático)")
         return
     end
 
     debugPrint("Campeão detectado:", mostFrequentChampion, "com", maxCount, "habilidade(s).")
-
     for presetName in pairs(CONFIG.Presets) do
         if presetName:lower():find(mostFrequentChampion:lower()) then
             debugPrint("Preset correspondente encontrado:", presetName, ". Aplicando...")
@@ -242,14 +190,13 @@ local function detectAndApplyChampionPreset(toolbarButtons)
         end
     end
     debugPrint("Nenhum preset encontrado para o campeão", mostFrequentChampion)
+    activePresetLabel:Set("Preset Ativo: Nenhum (Automático)")
 end
 
 local function pressAbilityKey(index, button, abilityName)
     local key = CONFIG.Keybinds[index]
     if not key then return end
-
     debugPrint("Usando habilidade:", abilityName, "(Slot:", index .. ")")
-
     local pressCount = CONFIG.DoublePressAbilities[abilityName] and 2 or 1
     for _ = 1, pressCount do
         VirtualInputManager:SendKeyEvent(true, key, false, game)
@@ -257,30 +204,21 @@ local function pressAbilityKey(index, button, abilityName)
         VirtualInputManager:SendKeyEvent(false, key, false, game)
         task.wait(0.05)
     end
-
     if button and button:IsA("GuiButton") then
         local originalColor = button.BackgroundColor3
         button.BackgroundColor3 = Color3.new(1, 1, 0)
         task.delay(0.25, function()
-            if button and button.Parent then
-                button.BackgroundColor3 = originalColor
-            end
+            if button and button.Parent then button.BackgroundColor3 = originalColor end
         end)
     end
 end
 
 local function findReadyParryAbility(toolbarButtons)
     local abilityButtons = {}
-    for i = 1, 4 do
-        abilityButtons[i] = toolbarButtons:FindFirstChild("AbilityButton" .. i)
-    end
-
+    for i = 1, 4 do abilityButtons[i] = toolbarButtons:FindFirstChild("AbilityButton" .. i) end
     local orderedCheck = {}
-    for slot, priority in ipairs(CONFIG.Priorities) do
-        table.insert(orderedCheck, {slot = slot, priority = priority})
-    end
+    for slot, priority in ipairs(CONFIG.Priorities) do table.insert(orderedCheck, {slot = slot, priority = priority}) end
     table.sort(orderedCheck, function(a, b) return a.priority < b.priority end)
-
     for _, item in ipairs(orderedCheck) do
         local index = item.slot
         local button = abilityButtons[index]
@@ -288,10 +226,7 @@ local function findReadyParryAbility(toolbarButtons)
             local label = button:FindFirstChild("AbilityNameLabel")
             local cooldownFrame = button:FindFirstChild("Cooldown")
             local lock = button:FindFirstChild("LockLabel")
-
-            if label and CONFIG.ParryAbilities[label.Text] and
-               cooldownFrame and not cooldownFrame.Visible and
-               lock and not lock.Visible then
+            if label and CONFIG.ParryAbilities[label.Text] and cooldownFrame and not cooldownFrame.Visible and lock and not lock.Visible then
                 debugPrint("Habilidade de maior prioridade encontrada:", label.Text, "no slot", index)
                 return index, button, label.Text
             end
@@ -301,34 +236,24 @@ local function findReadyParryAbility(toolbarButtons)
 end
 
 local function shouldParry(ball, cooldownStartTime, abilityName)
-    if not ball or not ball:IsA("BasePart") or not ball:FindFirstChild("Highlight") then
-        return false
-    end
-    if ball.Highlight.FillColor ~= Color3.new(1, 0, 0) then
-        return false
-    end
-
+    if not ball or not ball:IsA("BasePart") or not ball:FindFirstChild("Highlight") then return false end
+    if ball.Highlight.FillColor ~= Color3.new(1, 0, 0) then return false end
     local elapsed = (time() - cooldownStartTime) * 1000
     local isFast = CONFIG.FastTriggerAbilities[abilityName]
     local threshold = isFast and 300 or 800
-
     return elapsed >= threshold
 end
 
 local function onDeflectCooldownChanged(toolbarButtons)
     if not CONFIG.Enabled then return end
-
     local deflectButton = toolbarButtons:FindFirstChild("DeflectButton")
     if not deflectButton or not deflectButton:FindFirstChild("Cooldown") then return end
-
     if deflectButton.Cooldown.Visible then
         local cooldownStartTime = time()
-        
         task.spawn(function()
             debugPrint("Deflect em cooldown. Procurando por oportunidades de parry.")
             while deflectButton.Cooldown.Visible and task.wait(0.05) do
                 if not CONFIG.Enabled then break end
-
                 local index, button, abilityName = findReadyParryAbility(toolbarButtons)
                 if index then
                     local ball = workspace:FindFirstChild("Part")
@@ -338,7 +263,42 @@ local function onDeflectCooldownChanged(toolbarButtons)
                     end
                 end
             end
-            debugPrint("Verificação de parry encerrada (cooldown acabou, habilidade usada ou script desativado).")
+            debugPrint("Verificação de parry encerrada.")
+        end)
+    end
+end
+
+-- MUDANÇA: Função mais robusta para configurar os listeners das habilidades
+local function setupAbilityListeners(toolbarButtons)
+    debugPrint("Configurando listeners de habilidade...")
+    for i = 1, 4 do
+        local button = toolbarButtons:FindFirstChild("AbilityButton" .. i)
+        if not button then 
+            warn("Não foi possível encontrar o AbilityButton" .. i)
+            continue 
+        end
+
+        local connection = nil
+
+        local function setupListenerForLabel(label)
+            if connection then connection:Disconnect() end
+            if label then
+                debugPrint("Conectando listener à label do slot " .. i)
+                connection = label:GetPropertyChangedSignal("Text"):Connect(function()
+                    debugPrint("Mudança de texto detectada no slot " .. i)
+                    task.wait(0.2) 
+                    detectAndApplyChampionPreset(toolbarButtons)
+                end)
+            end
+        end
+
+        setupListenerForLabel(button:FindFirstChild("AbilityNameLabel"))
+
+        button.ChildAdded:Connect(function(child)
+            if child.Name == "AbilityNameLabel" then
+                debugPrint("Nova AbilityNameLabel adicionada ao slot " .. i .. ". Reconfigurando listener.")
+                setupListenerForLabel(child)
+            end
         end)
     end
 end
@@ -358,20 +318,11 @@ local function main()
         warn("Botão de Deflect não encontrado.") return
     end
 
-    -- MUDANÇA: Detecta o preset na inicialização e quando as habilidades mudam
-    task.wait(1) -- Espera um pouco para a UI carregar completamente as habilidades
+    task.wait(1) 
     detectAndApplyChampionPreset(toolbarButtons)
-
-    for i = 1, 4 do
-        local button = toolbarButtons:FindFirstChild("AbilityButton" .. i)
-        local label = button and button:FindFirstChild("AbilityNameLabel")
-        if label then
-            label:GetPropertyChangedSignal("Text"):Connect(function()
-                task.wait(0.2) -- Delay para garantir que todas as labels foram atualizadas
-                detectAndApplyChampionPreset(toolbarButtons)
-            end)
-        end
-    end
+    
+    -- MUDANÇA: Chamando a nova função de configuração de listeners
+    setupAbilityListeners(toolbarButtons)
 
     deflectButton.Cooldown:GetPropertyChangedSignal("Visible"):Connect(function()
         onDeflectCooldownChanged(toolbarButtons)
@@ -386,5 +337,4 @@ if not success then
 end
 
 OrionLib:Init()
-
 
