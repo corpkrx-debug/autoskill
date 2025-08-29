@@ -28,8 +28,8 @@ local CONFIG = {
         ["Foxuro"] = {1, 2, 4, 3},
 		["Saito e Gazo"] = {1, 4, 2, 3},
 		["Koju"] = {1, 3, 4, 2},
-		["Lufus"] = {1, 4, 3, 2	}
-		["TesteFoxuro"] = {4, 1, 2, 3},
+		["Lufus"] = {1, 4, 3, 2	},
+		["TesteFoxuro"] = {4, 1, 2, 3}
     },
 
     FastTriggerAbilities = {
