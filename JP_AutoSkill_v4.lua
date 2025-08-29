@@ -22,13 +22,10 @@ local CONFIG = {
     
     -- Seção central para configurar presets de prioridade.
     Presets = {
-        ["0 - Kameki"] = {1, 2, 3, 4},
-		["1 - Saito e Gazo"] = {1, 4, 2, 3},
-        ["2 - Foxuro e Keilo"] = {1, 2, 4, 3},
-        ["3 - Gloom"] = {2, 4, 1, 3},
-		["4 - Koju"] = {1, 3, 4, 2},
-		["5 - Lufus"] = {1, 4, 3, 2	},
-		["TesteFoxuro"] = {4, 1, 2, 3},
+        ["Padrão"] = {1, 2, 3, 4},
+        ["Invertido"] = {4, 3, 2, 1},
+        ["Meio-Primeiro"] = {2, 3, 1, 4},
+        ["Extremos-Primeiro"] = {1, 4, 2, 3},
     },
 
     FastTriggerAbilities = {
@@ -68,8 +65,8 @@ local CONFIG = {
 --[[ INTERFACE GRÁFICA (UI) ]]
 local Window = OrionLib:MakeWindow({
     Name = "Ability Control Panel", HidePremium = false,
-    SaveConfig = true, ConfigFolder = "OrionAbilityControl",
-    -- NOVO: Parâmetros para tamanho e posição da janela. Altere os valores como quiser.
+    SaveConfig = true, ConfigFolder = "OrionAbilityControl_V2", -- MUDANÇA: Nome alterado para forçar a redefinição
+    -- Parâmetros para tamanho e posição da janela. Altere os valores como quiser.
     Size = UDim2.new(0, 500, 0, 420), -- Largura de 500 pixels, Altura de 420 pixels
     Position = UDim2.new(0, 30, 0, 30)  -- 30 pixels da esquerda, 30 pixels do topo
 })
