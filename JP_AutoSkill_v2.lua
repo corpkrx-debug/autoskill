@@ -1,3 +1,5 @@
+-- TESTE: ISTO É APENAS UM COMENTÁRIO E DEVE SER IGNORADO
+
 --[[
    
 JP - Auto Skill - Death Ball
@@ -6,19 +8,6 @@ JP - Auto Skill - Death Ball
 
 local Players = game:GetService("Players")
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/weakhoes/Roblox-UI-Libs/refs/heads/main/Orion%20Lib/Orion%20Lib%20Source.lua')))()
-
--- ============================================================
---                        CORREÇÃO
---     Adicionando a função table.clone que estava faltando
--- ============================================================
-table.clone = function(originalTable)
-    local newTable = {}
-    for key, value in pairs(originalTable) do
-        newTable[key] = value
-    end
-    return newTable
-end
--- ============================================================
 
 local Window = OrionLib:MakeWindow({
     Name = "Ability Control Panel",
@@ -33,40 +22,23 @@ local Tab = Window:MakeTab({
     PremiumOnly = false
 })
 
+local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
---[[
-============================================================
-    CONFIGURAÇÃO DE PRESETS DE PRIORIDADE
-    Adicione ou edite os presets aqui.
-    O formato é {PrioridadeSlot1, PrioridadeSlot2, PrioridadeSlot3, PrioridadeSlot4}
-============================================================
-]]
-local PRESET_CONFIGS = {
-    ["Keilo e Kameki"] = {1, 2, 3, 4},
-    ["Saito"] = {1, 4, 2, 3},
-    ["Gloom"] = {2, 4, 1, 3},
-    ["Foxuro"] = {1, 2, 4, 3},
-    ["Koju"] = {1, 3, 4, 2},
-    ["Lufus"] = {1, 4, 3, 2}
-}
-local defaultPresetName = "Keilo e Kameki"
-
-
 -- Configuration
 local CONFIG = {
     Debug = true,
-    -- Prioridades são inicializadas com o preset padrão.
-    Priorities = table.clone(PRESET_CONFIGS[defaultPresetName]),
+    -- NOVA CONFIGURAÇÃO: Armazena a prioridade de cada slot
+    Priorities = {1, 2, 3, 4}, 
     FastTriggerAbilities = {
         ["DEKU SMASH"] = true,
         ["BATTLE SPIRIT"] = true,
         ["SUPER JUMP"] = true,
         ["CHAIN SPEAR"] = true,
         ["SKY GLIDE"] = true,
-        ["DARK REVERSAL"] = true,
+		["DARK REVERSAL"] = true,
     },
     DoublePressAbilities = {
         ["SHADOW CLONE"] = true,
@@ -82,15 +54,15 @@ local CONFIG = {
         "ICE SLIDE", "ZAP KICKZ", "SPIRIT WRATH", "BATTLE SPIRIT", "CHAOTIC RUSH", "INSTANT SLASH",
         "OMNI-SLASH", "BREAKDANCE", "PHANTOM BLAST", "SIDESTEP", "RUSH PUNCH", "REAP SLASH",
         "JUJUMANJI SLASH", "FLASH WRATH", "SONIC SLIDE", "FROZEN WRATHS", "CHAIN SHOT", "HANZO PUNCH",
-        "ASSAULT INTERVENTION", "LIFESTEAL INFECTION", "FORG-SMASH", "CLONE PUNCH", "PULL",
-        "JUDGEMENT CUT", "GALAXY SLASH", "REAPER", "RAGING DEFLECTION", "SHADOW RUSH", "ICE",
-        "WIND", "RAGING WIND", "DEATH BALL", "INFINITY", "SINGULARITY", "DEATH STEP", "RAGING DEMON",
-        "SPECTRE", "BLINK", "INSTINCT", "PHANTOM STEP", "DEATH COUNTER", "FATAL BLADE", "ASSASSINATION",
-        "PHANTASMAGORIA", "VOID", "DEATH GOD", "ZAP FREEZE", "GODSPEED", "ASSASSIN INVISIBILITY",
-        "LIGHTNING INTERCEPT", "DAGGER DASH", "RULERS HOLD", "ARISE", "SHADOW RAMPAGE", "DARK REVERSAL",
-        "DREAD SPHERE", "PHANTOM GRASP", "LEAP STRIKE", "SPIRIT WALL", "HANDGUN", "FAKE BALL",
-        "PHASE DASH", "BLINDFOLD", "ASTRAL PORTAL", "DRAGON RUSH", "INSTANT TRAVEL", "KI BLAST",
-        "EXTEND-O ARM", "GUM GUM BALLOON", "GLASS WALL", "TIME HAKI", "SUPER JUMP", "GROUND WALLS", "CHAIN SPEAR", "ZAP DEFLECT", "HANDGUN (1/2)", "DREAD SPHERE (1/2)",
+        "ASSAULT INTERVENTION", "LIFESTEAL INFECTION", "FORG-SMASH", "CLONE PUNCH", "PULL", 
+        "JUDGEMENT CUT", "GALAXY SLASH", "REAPER", "RAGING DEFLECTION", "SHADOW RUSH", "ICE", 
+        "WIND", "RAGING WIND", "DEATH BALL", "INFINITY", "SINGULARITY", "DEATH STEP", "RAGING DEMON", 
+        "SPECTRE", "BLINK", "INSTINCT", "PHANTOM STEP", "DEATH COUNTER", "FATAL BLADE", "ASSASSINATION", 
+        "PHANTASMAGORIA", "VOID", "DEATH GOD", "ZAP FREEZE", "GODSPEED", "ASSASSIN INVISIBILITY", 
+        "LIGHTNING INTERCEPT", "DAGGER DASH", "RULERS HOLD", "ARISE", "SHADOW RAMPAGE", "DARK REVERSAL", 
+        "DREAD SPHERE", "PHANTOM GRASP", "LEAP STRIKE", "SPIRIT WALL", "HANDGUN", "FAKE BALL", 
+        "PHASE DASH", "BLINDFOLD", "ASTRAL PORTAL", "DRAGON RUSH", "INSTANT TRAVEL", "KI BLAST", 
+        "EXTEND-O ARM", "GUM GUM BALLOON", "GLASS WALL", "TIME HAKI", "SUPER JUMP", "GROUND WALLS", "CHAIN SPEAR", "ZAP DEFLECT", 		"HANDGUN (1/2)", "DREAD SPHERE (1/2)",
         "SKY GLIDE","MANA SHOT","RUNEGUARD","SINGULARITY", "NINJA RUN", "SHADOW CLONE", "TREE JUMP", "FOX ARMOUR"
     }
 }
@@ -105,72 +77,27 @@ Tab:AddToggle({
     end
 })
 
---[[
-============================================================
-       NOVO SISTEMA DE PRESETS DE PRIORIDADE
-============================================================
-]]
-local prioritySliders = {} -- Precisa ser declarado antes para ser acessível
-local selectedPreset = defaultPresetName
-
-Tab:AddLabel("Presets de Prioridade")
-
--- Gera a lista de nomes de presets para o Dropdown
-local presetNames = {}
-for name, _ in pairs(PRESET_CONFIGS) do
-    table.insert(presetNames, name)
-end
-
-Tab:AddDropdown({
-    Name = "Escolher Configuração",
-    Default = selectedPreset,
-    Options = presetNames,
-    Callback = function(value)
-        selectedPreset = value
-    end
-})
-
-Tab:AddButton({
-    Name = "Aplicar Preset",
-    Callback = function()
-        local preset = PRESET_CONFIGS[selectedPreset]
-        if preset then
-            CONFIG.Priorities = table.clone(preset)
-            -- Atualiza os sliders visuais para corresponder ao preset
-            for i = 1, 4 do
-                if prioritySliders[i] then
-                    prioritySliders[i]:Set(CONFIG.Priorities[i])
-                end
-            end
-            OrionLib:MakeNotification({
-                Name = "Preset Aplicado!",
-                Content = "Prioridades atualizadas para: " .. selectedPreset,
-                Image = "rbxassetid://4483345998",
-                Time = 3
-            })
-            debugPrint("Preset '" .. selectedPreset .. "' aplicado. Novas prioridades:", table.concat(CONFIG.Priorities, ", "))
-        end
-    end
-})
-
-
--- SISTEMA DE PRIORIDADE MANUAL COM SLIDERS
+-- NOVO SISTEMA DE PRIORIDADE COM SLIDERS
+local prioritySliders = {}
 local function updatePriorities(changedSlot, newPriority)
+    -- Impede o callback de rodar recursivamente
     if CONFIG.Priorities[changedSlot] == newPriority then return end
 
+    -- Encontra qual slot já tem a nova prioridade
     for slot, priority in ipairs(CONFIG.Priorities) do
         if slot ~= changedSlot and priority == newPriority then
+            -- Troca as prioridades
             local oldPriority = CONFIG.Priorities[changedSlot]
             CONFIG.Priorities[slot] = oldPriority
-            prioritySliders[slot]:Set(oldPriority)
+            prioritySliders[slot]:Set(oldPriority) -- Atualiza o slider visualmente
             break
         end
     end
     CONFIG.Priorities[changedSlot] = newPriority
-    debugPrint("Prioridades ajustadas manualmente:", table.concat(CONFIG.Priorities, ", "))
+    debugPrint("Prioridades atualizadas:", table.concat(CONFIG.Priorities, ", "))
 end
 
-Tab:AddLabel("Ajuste Manual de Prioridades")
+Tab:AddLabel("Prioridade de Uso das Habilidades")
 
 for i = 1, 4 do
     prioritySliders[i] = Tab:AddSlider({
@@ -250,6 +177,7 @@ local function pressAbilityKey(index, button, abilityName)
     end
 end
 
+-- FUNÇÃO MODIFICADA PARA ADICIONAR DEBUG DE HABILIDADES DISPONÍVEIS
 local function findReadyParryAbility(toolbarButtons)
     local abilityButtons = {
         [1] = toolbarButtons:FindFirstChild("AbilityButton1"),
@@ -263,7 +191,8 @@ local function findReadyParryAbility(toolbarButtons)
         table.insert(orderedCheck, {slot = slot, priority = priority})
     end
     table.sort(orderedCheck, function(a, b) return a.priority < b.priority end)
-   
+    
+    -- LÓGICA DE DEBUG ADICIONADA
     local availableAbilities = {}
     for _, item in ipairs(orderedCheck) do
         local button = abilityButtons[item.slot]
@@ -271,7 +200,7 @@ local function findReadyParryAbility(toolbarButtons)
             local label = button:FindFirstChild("AbilityNameLabel")
             local cooldownFrame = button:FindFirstChild("Cooldown")
             local lock = button:FindFirstChild("LockLabel")
-           
+            
             if label and table.find(CONFIG.ParryAbilities, label.Text) then
                 if cooldownFrame and not cooldownFrame.Visible and lock and not lock.Visible then
                     table.insert(availableAbilities, label.Text .. " (P" .. item.priority .. ")")
@@ -285,16 +214,18 @@ local function findReadyParryAbility(toolbarButtons)
     else
         debugPrint("Nenhuma habilidade de Parry disponível.")
     end
+    -- FIM DA LÓGICA DE DEBUG
 
+    -- Itera na ordem de prioridade definida para encontrar a primeira habilidade pronta
     for _, item in ipairs(orderedCheck) do
         local index = item.slot
         local button = abilityButtons[index]
-       
+        
         if button then
             local label = button:FindFirstChild("AbilityNameLabel")
             local cooldownFrame = button:FindFirstChild("Cooldown")
             local lock = button:FindFirstChild("LockLabel")
-           
+            
             if label and table.find(CONFIG.ParryAbilities, label.Text) then
                 if cooldownFrame and not cooldownFrame.Visible and lock and not lock.Visible then
                     debugPrint("Habilidade de maior prioridade encontrada:", label.Text, "no slot", index)
@@ -303,7 +234,7 @@ local function findReadyParryAbility(toolbarButtons)
             end
         end
     end
-   
+    
     return nil
 end
 
