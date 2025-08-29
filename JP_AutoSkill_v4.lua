@@ -22,10 +22,13 @@ local CONFIG = {
     
     -- Seção central para configurar presets de prioridade.
     Presets = {
-        ["Padrão"] = {1, 2, 3, 4},
-        ["Invertido"] = {4, 3, 2, 1},
-        ["Meio-Primeiro"] = {2, 3, 1, 4},
-        ["Extremos-Primeiro"] = {1, 4, 2, 3},
+        ["0 - Kameki"] = {1, 2, 3, 4},
+		["1 - Saito e Gazo"] = {1, 4, 2, 3},
+        ["2 - Foxuro e Keilo"] = {1, 2, 4, 3},
+        ["3 - Gloom"] = {2, 4, 1, 3},
+		["4 - Koju"] = {1, 3, 4, 2},
+		["5 - Lufus"] = {1, 4, 3, 2	},
+		["TesteFoxuro"] = {4, 1, 2, 3},
     },
 
     FastTriggerAbilities = {
