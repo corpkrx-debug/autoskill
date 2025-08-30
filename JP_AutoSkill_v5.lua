@@ -4,7 +4,7 @@ Analisado e refatorado para maior eficiência e robustez.
 Versão 9: Implementado monitoramento ativo para garantir a detecção de mudança de campeão.
 ]]
 
---[[ SERVIÇOS ]]
+--[[ SERVIços ]]
 local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
@@ -37,10 +37,10 @@ local CONFIG = {
     -- Mapa de habilidades para campeões (DE/PARA)
     ChampionPresetsMap = {
         ["EXTEND-O ARM"] = "Lufus", ["GUM GUM BALLOON"] = "Lufus", ["GLASS WALL"] = "Lufus", ["TIME HAKI"] = "Lufus",
-        ["FAKE BALL"] = "Gazo", ["PHASE DASH"] = "Gazo", ["BLINDFOLD"] = "Gazo", ["ASTRAL PORTAL"] = "Gazo",
-        ["UPPER CUT"] = "Saito", ["SUPER JUMP"] = "Saito", ["SONIC SLIDE"] = "Saito", ["GROUND WALLS"] = "Saito",
+        ["FAKE BALL"] = "Gazo", ["PHASE DASH"] = "Gazo", ["BLINDFOLD"] = "Gazo", ["ASTRAL PORTAL"] = "Gazo", ["CURSED BLUE"] = "Gazo",
+        ["UPPER CUT"] = "Saito", ["SUPER JUMP"] = "Saito", ["SONIC SLIDE"] = "Saito", ["GROUND WALLS"] = "Saito", ["AFTERSHOCK"] = "Saito",
         ["KI BLAST"] = "Kameki", ["DRAGON RUSH"] = "Kameki", ["INSTANT TRAVEL"] = "Kameki", ["DEATH BALL"] = "Kameki",
-        ["ZAP FREEZE"] = "Keilo", ["GODSPEED"] = "Keilo", ["ASSASSIN INVISIBILITY"] = "Keilo", ["LIGHTNING INTERCEPT"] = "Keilo",
+        ["ZAP FREEZE"] = "Keilo", ["GODSPEED"] = "Keilo", ["ASSASSIN INVISIBILITY"] = "Keilo", ["LIGHTNING INTERCEPT"] = "Keilo", ["ZAP DEFLECT"] = "Keilo",
         ["GEM HUNT"] = "Gemtoki", ["DOUBLE OR NOTHING"] = "Gemtoki", ["CASH OUT"] = "Gemtoki", ["DONATE"] = "Gemtoki",
         ["NINJA RUN"] = "Foxuro", ["SHADOW CLONE"] = "Foxuro", ["TREE JUMP"] = "Foxuro", ["FOX ARMOUR"] = "Foxuro",
         ["LEAP STRIKE"] = "Koju", ["SPIRIT WALL"] = "Koju", ["CHAIN SPEAR"] = "Koju", ["HANDGUN"] = "Koju",
@@ -50,7 +50,7 @@ local CONFIG = {
         ["JET DASH"] = "Denjin", ["GRAVITY HOLD"] = "Denjin", ["ORBITAL CANNON"] = "Denjin", ["OVERHEAT"] = "Denjin",
         ["SHADOW RAMPAGE"] = "Gloom", ["DARK REVERSAL"] = "Gloom", ["DREAD SPHERE"] = "Gloom", ["PHANTOM GRASP"] = "Gloom",
         ["SKY GLIDE"] = "Friera", ["MANA SHOT"] = "Friera", ["RUNEGUARD"] = "Friera", ["SINGULARITY"] = "Friera",
-        ["DAGGER DASH"] = "Wu", ["BLINK"] = "Wu", ["RULERS HOLD"] = "Wu", ["ARISE"] = "Wu",
+        ["DAGGER DASH"] = "Wu", ["BLINK"] = "Wu", ["RULERS HOLD"] = "Wu", ["ARISE"] = "Wu", ["BLINK (TELEPORT)"] = "Wu",
         ["PHANTOM SLAP"] = "JJ", ["REVENGE"] = "JJ", ["FIST BARRAGE"] = "JJ", ["STANDOFF"] = "JJ"
     },
 
@@ -67,10 +67,10 @@ local CONFIG = {
     ParryAbilities = {
         -- Lufus
         ["EXTEND-O ARM"]=true, ["GUM GUM BALLOON"]=true, ["GLASS WALL"]=true, ["TIME HAKI"]=true,
-        ["FAKE BALL"]=true, ["PHASE DASH"]=true, ["BLINDFOLD"]=true, ["ASTRAL PORTAL"]=true,
-        ["UPPER CUT"]=true, ["SUPER JUMP"]=true, ["SONIC SLIDE"]=true, ["GROUND WALLS"]=true,
+        ["FAKE BALL"]=true, ["PHASE DASH"]=true, ["BLINDFOLD"]=true, ["ASTRAL PORTAL"]=true, ["CURSED BLUE"]=true,
+        ["UPPER CUT"]=true, ["SUPER JUMP"]=true, ["SONIC SLIDE"]=true, ["GROUND WALLS"]=true, ["AFTERSHOCK"]=true,
         ["KI BLAST"]=true, ["DRAGON RUSH"]=true, ["INSTANT TRAVEL"]=true, ["DEATH BALL"]=true,
-        ["ZAP FREEZE"]=true, ["GODSPEED"]=true, ["ASSASSIN INVISIBILITY"]=true, ["LIGHTNING INTERCEPT"]=true,
+        ["ZAP FREEZE"]=true, ["GODSPEED"]=true, ["ASSASSIN INVISIBILITY"]=true, ["LIGHTNING INTERCEPT"]=true, ["ZAP DEFLECT"]=true,
         ["GEM HUNT"]=true, ["DOUBLE OR NOTHING"]=true, ["CASH OUT"]=true, ["DONATE"]=true,
         ["NINJA RUN"]=true, ["SHADOW CLONE"]=true, ["TREE JUMP"]=true, ["FOX ARMOUR"]=true,
         ["LEAP STRIKE"]=true, ["SPIRIT WALL"]=true, ["CHAIN SPEAR"]=true, ["HANDGUN"]=true,
@@ -80,7 +80,7 @@ local CONFIG = {
         ["JET DASH"]=true, ["GRAVITY HOLD"]=true, ["ORBITAL CANNON"]=true, ["OVERHEAT"]=true,
         ["SHADOW RAMPAGE"]=true, ["DARK REVERSAL"]=true, ["DREAD SPHERE"]=true, ["PHANTOM GRASP"]=true,
         ["SKY GLIDE"]=true, ["MANA SHOT"]=true, ["RUNEGUARD"]=true, ["SINGULARITY"]=true,
-        ["DAGGER DASH"]=true, ["BLINK"]=true, ["RULERS HOLD"]=true, ["ARISE"]=true,
+        ["DAGGER DASH"]=true, ["BLINK"]=true, ["RULERS HOLD"]=true, ["ARISE"]=true, ["BLINK (TELEPORT)"]=true,
         ["PHANTOM SLAP"]=true, ["REVENGE"]=true, ["FIST BARRAGE"]=true, ["STANDOFF"]=true
     }
 }
@@ -346,5 +346,6 @@ if not success then
 end
 
 OrionLib:Init()
+
 
 
