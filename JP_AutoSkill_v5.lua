@@ -88,11 +88,11 @@ local CONFIG = {
 --[[ INTERFACE GRÁFICA (UI) ]]
 local Window = OrionLib:MakeWindow({
     Name = "Ability Control Panel", HidePremium = false,
-    SaveConfig = true, ConfigFolder = "OrionAbilityControl_V2",
+    SaveConfig = true, ConfigFolder = "OrionAbilityControl_V3", -- MUDANÇA: Nome da pasta alterado para forçar novas configurações
     Size = UDim2.new(0, 500, 0, 420),
     Position = UDim2.new(0, 30, 0, 30),
     ToggleKey = Enum.KeyCode.RightShift,
-    StarterOpened = false -- MUDANÇA: Define que a UI começa fechada
+    StarterOpened = false -- Define que a UI começa fechada
 })
 local Tab = Window:MakeTab({
     Name = "Ability Settings", Icon = "rbxassetid://4483345998",
@@ -348,4 +348,5 @@ if not success then
 end
 
 OrionLib:Init()
+
 
